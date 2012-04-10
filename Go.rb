@@ -1,25 +1,24 @@
 #   
-#
 #  #  #  #  #  #  #  #  #   ---  Go.rb  ---  #  #  #  #  #  #  #  #  #  #  #  #
-# 																			  #
+#									      #
 #  A playable implementation of the Chinese board game "Go" written in Ruby   #
-#      																		  #
+#      									      #
 #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #
-#																			  #
-#																			  #
+#									      #
+#		   							      #
 ###############################################################################
-#       Copyright 2012 Graham Tanner Robart <graham.robart@ncf.edu>			  #
-#       																	  #
+#       Copyright 2012 Graham Tanner Robart <graham.robart@ncf.edu>	      #
+#      									      #
 #       This program is free software; you can redistribute it and/or modify  #
 #       it under the terms of the GNU General Public License as published by  #
 #       the Free Software Foundation; either version 2 of the License, or     #
-#       (at your option) any later version.									  #
-#       																	  #
+#       (at your option) any later version.			              #
+#       								      #
 #       This program is distributed in the hope that it will be useful,	      #
 #       but WITHOUT ANY WARRANTY; without even the implied warranty of        #
-#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the		  #
-#       GNU General Public License for more details.						  #
-#       																	  #
+#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the	      #
+#       GNU General Public License for more details.			      #
+#       		 					  	      #
 ###############################################################################           
 
 
@@ -274,7 +273,7 @@ end
 
 class Game
 
-	def initialize(board, player1, player2)
+	def initialize(board = board.new(), player1 = Player.new("Black", 'B') , player2 = Player.new("White", 'W'))
 		@record = Array.new()
 		@currentmove = 0
 		
@@ -282,7 +281,7 @@ class Game
 	
 	def Move(player)
 		@currentmove += 1 
-	
+		
 	end
 end
 
