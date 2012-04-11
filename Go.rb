@@ -32,7 +32,7 @@
 
 class Board
 
-#Object for managing the Board and its functions
+# Object for managing the Board and its functions
 	
 	def initialize(size, handicap = 0)
 		@data = Array.new(size+2) { Array.new(size+2) {0} }
@@ -42,8 +42,9 @@ class Board
 	end
 	
 	
+	
+	# Sets a boundary of nil values around the edges, to allow ko rules 
 	def MakeEdges()
-	#Sets a boundary of nil values around the edges, to allow ko rules 
 		for i in 0..@size+1
 			if @data[0][i] == 0
 				@data[0][i] = nil
@@ -61,9 +62,8 @@ class Board
 	end
 	
 	
-	
+	# Returns the value at the given position
 	def Checkpos(coordinate_tuple)
-	#Returns the value at the given position
 		x = coordinate_tuple[0]
 		y = coordinate_tuple[1]
 		return @data[x][y]
@@ -71,9 +71,8 @@ class Board
 	
 	
 	
-	
-	def CheckNeighbors(coordinate_tuple)
 	#Returns a 4 item list of the values of the 4 adjacent neighbors to the given position
+	def CheckNeighbors(coordinate_tuple)
 		x = coordinate_tuple[0]
 		y = coordinate_tuple[1]
 		return [@data[x][y+1], @data[x+1][y],  @data[x][y-1], @data[x-1][y]]
@@ -81,9 +80,8 @@ class Board
 	
 	
 	
-	
-	def ShowBoard()
 	#Pretty print board (unformatted)
+	def ShowBoard()
 		@data.each do |i|
 			puts "[", i.inspect, "]"
 		end
@@ -91,8 +89,8 @@ class Board
 	
 	
 	
-	def Setpos(coordinate_tuple, color)
 	#sets the position given to the color value given
+	def Setpos(coordinate_tuple, color)
 		x = coordinate_tuple[0]
 		y = coordinate_tuple[1]
 		#check if valid position
@@ -148,7 +146,7 @@ class Board
 		
 		
 		
-		
+	#sets the value of the given coordinate to 0	
 	def Removepos(coordinate_tuple)
 		x = coordinate_tuple[0]
 		y = coordinate_tuple[1]
@@ -159,9 +157,8 @@ class Board
 	
 	
 	
-	
+	#re-calculates the liberties of the each group on the board
 	def UpdateLiberties()
-		#re-calculates the liberties of the each group on the board
 		@groups.each do |lol|
 			#resets all liberties for all groups.
 			lol.liberties.clear
@@ -226,25 +223,28 @@ class Group
 		@size = @pieces.length
 	end
 	
+	#returns color of self
 	def color
 		return @color
 	end
 	
+	#returns the array of pieces in the group
 	def pieces
-		 return @pieces
+		return @pieces
 	end
 	
+	#adds a piece at the given position to the group
 	def AddPiece(coordinate_tuple)
 		@pieces.push(coordinate_tuple)
 	end
 	
-	
+	#include? wrapper to check if the given coordinate is in the group
 	def include?(coordinate_tuple)
 		return @pieces.include?(coordinate_tuple)
 	end
 
 	
-		
+	#returns the array of liberty positions for the group	
 	def liberties
 		return @liberties
 	end
