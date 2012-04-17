@@ -1,9 +1,10 @@
 #Go.testing.rb
-from Go import *
+require ('Go')
+
 
 x = Board.new(9)
-player1 = Player.new('Black')
-player2 = Player.new('White')
+player1 = Player.new('Black', 'B')
+player2 = Player.new('White', 'B')
 x.Setpos([3,3], 'W')	
 x.Setpos([5,5], 'B')
 x.Setpos([5,4], 'W')

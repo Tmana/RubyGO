@@ -276,11 +276,15 @@ class Game
 	def initialize(board = board.new(), player1 = Player.new("Black", 'B') , player2 = Player.new("White", 'W'))
 		@record = Array.new()
 		@currentmove = 0
-		
+		@board = board
+		@players = [player1, player2]
 	end
 	
 	def Move(player)
-		@currentmove += 1 
+		@currentmove += 1
+		coordinate_tuple = gets
+		@board.SetPos(coordinate_tuple, player.color)
+		@record.push(@board.data)
 		
 	end
 end
