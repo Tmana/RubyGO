@@ -282,7 +282,7 @@ class Game
 	
 	def Move(player)
 		@currentmove += 1 
-	
+		
 	end
 end
 
