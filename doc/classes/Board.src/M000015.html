@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html>
+<head>
+  <title>Setpos (Board)</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  <link rel="stylesheet" href="../.././rdoc-style.css" type="text/css" media="screen" />
+</head>
+<body class="standalone-code">
+  <pre><span class="ruby-comment cmt"># File Go.rb, line 93</span>
+        <span class="ruby-keyword kw">def</span> <span class="ruby-constant">Setpos</span>(<span class="ruby-identifier">coordinate_tuple</span>, <span class="ruby-identifier">color</span>)
+                <span class="ruby-identifier">x</span> = <span class="ruby-identifier">coordinate_tuple</span>[<span class="ruby-value">0</span>]
+                <span class="ruby-identifier">y</span> = <span class="ruby-identifier">coordinate_tuple</span>[<span class="ruby-value">1</span>]
+                <span class="ruby-comment cmt">#check if valid position</span>
+                <span class="ruby-keyword kw">if</span> <span class="ruby-ivar">@data</span>[<span class="ruby-identifier">x</span>][<span class="ruby-identifier">y</span>] <span class="ruby-operator">==</span> <span class="ruby-value">0</span>
+                        <span class="ruby-ivar">@data</span>[<span class="ruby-identifier">x</span>][<span class="ruby-identifier">y</span>] = <span class="ruby-identifier">color</span>
+                        <span class="ruby-keyword kw">if</span> <span class="ruby-constant">CheckNeighbors</span>([<span class="ruby-identifier">x</span>,<span class="ruby-identifier">y</span>]).<span class="ruby-identifier">count</span>(<span class="ruby-identifier">color</span>) <span class="ruby-operator">==</span> <span class="ruby-value">0</span>
+                        <span class="ruby-comment cmt">#if position is a new group</span>
+                                <span class="ruby-identifier">mofo</span> = <span class="ruby-constant">Group</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">color</span>)
+                                <span class="ruby-identifier">mofo</span>.<span class="ruby-constant">AddPiece</span>([<span class="ruby-identifier">x</span>,<span class="ruby-identifier">y</span>])
+                                <span class="ruby-ivar">@groups</span>.<span class="ruby-identifier">push</span>(<span class="ruby-identifier">mofo</span>)
+                                <span class="ruby-constant">UpdateLiberties</span>()
+<span class="ruby-comment cmt">#                               @groups.each do |herp|</span>
+<span class="ruby-comment cmt">#                               #check if takes away liberty of opponent group</span>
+<span class="ruby-comment cmt">#                                       if herp.liberties.include?([x,y]) == true</span>
+<span class="ruby-comment cmt">#                                               if herp.color != color</span>
+<span class="ruby-comment cmt">#                                                       herp.liberties.delete([x,y])</span>
+<span class="ruby-comment cmt">#                                                       print &quot;removed liberty\n&quot;</span>
+<span class="ruby-comment cmt">#                                               end</span>
+<span class="ruby-comment cmt">#                                       end</span>
+<span class="ruby-comment cmt">#                                end</span>
+                        <span class="ruby-keyword kw">elsif</span> <span class="ruby-constant">CheckNeighbors</span>([<span class="ruby-identifier">x</span>,<span class="ruby-identifier">y</span>]).<span class="ruby-identifier">count</span>(<span class="ruby-identifier">color</span>) <span class="ruby-operator">==</span> <span class="ruby-value">1</span>
+                                <span class="ruby-ivar">@groups</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">herp</span><span class="ruby-operator">|</span>
+                                        <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">herp</span>.<span class="ruby-identifier">liberties</span>.<span class="ruby-identifier">include?</span>([<span class="ruby-identifier">x</span>,<span class="ruby-identifier">y</span>]) <span class="ruby-operator">==</span>  <span class="ruby-keyword kw">true</span>
+                                                <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">herp</span>.<span class="ruby-identifier">color</span> <span class="ruby-operator">==</span> <span class="ruby-identifier">color</span>
+                                                        <span class="ruby-identifier">herp</span>.<span class="ruby-constant">AddPiece</span>([<span class="ruby-identifier">x</span>,<span class="ruby-identifier">y</span>])
+                                                <span class="ruby-keyword kw">end</span>
+                                        <span class="ruby-keyword kw">end</span>
+                                <span class="ruby-keyword kw">end</span>
+                                <span class="ruby-constant">UpdateLiberties</span>()
+                                
+                        <span class="ruby-keyword kw">elsif</span> <span class="ruby-constant">CheckNeighbors</span>([<span class="ruby-identifier">x</span>,<span class="ruby-identifier">y</span>]).<span class="ruby-identifier">count</span>(<span class="ruby-identifier">color</span>) <span class="ruby-operator">&gt;=</span> <span class="ruby-value">2</span>
+                                <span class="ruby-identifier">newgroup</span> = <span class="ruby-constant">Group</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">color</span>)
+                                <span class="ruby-ivar">@groups</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">herp</span><span class="ruby-operator">|</span>
+                                        <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">herp</span>.<span class="ruby-identifier">liberties</span>.<span class="ruby-identifier">include?</span>([<span class="ruby-identifier">x</span>,<span class="ruby-identifier">y</span>])
+                                                <span class="ruby-identifier">herp</span>.<span class="ruby-identifier">pieces</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">derp</span><span class="ruby-operator">|</span>
+                                                        <span class="ruby-identifier">newgroup</span>.<span class="ruby-constant">AddPiece</span>(<span class="ruby-identifier">derp</span>)
+                                                <span class="ruby-keyword kw">end</span>
+                                                <span class="ruby-ivar">@groups</span>.<span class="ruby-identifier">delete</span>(<span class="ruby-identifier">herp</span>)
+                                        <span class="ruby-keyword kw">end</span>
+                                <span class="ruby-keyword kw">end</span>
+                                <span class="ruby-identifier">newgroup</span>.<span class="ruby-constant">AddPiece</span>([<span class="ruby-identifier">x</span>,<span class="ruby-identifier">y</span>])
+                                <span class="ruby-ivar">@groups</span>.<span class="ruby-identifier">push</span>(<span class="ruby-identifier">newgroup</span>)              
+                                                
+                        <span class="ruby-keyword kw">end</span>
+                        
+                        
+                <span class="ruby-keyword kw">else</span>
+                        <span class="ruby-identifier">print</span> <span class="ruby-value str">&quot;Invalid move, please try again...&quot;</span>
+                <span class="ruby-keyword kw">end</span>
+                
+                
+        <span class="ruby-keyword kw">end</span></pre>
+</body>
+</html>
