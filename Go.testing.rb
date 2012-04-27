@@ -16,14 +16,13 @@ class GoTest < Test::Unit::TestCase
 	end
 	
 	def test_boardinit
-	
+		assert_equal 
 	end
 	
 	def test_values
-		assert_equal(@x.Checkpos([3,3]), 'W', 'Success! position and value are set properly')
-		assert_equal(@x.Checkpos([5,5]), 'B', 'Success! position and value are set properly')
+		assert_equal(@x.Checkpos([3,3]), 'W', 'Success! White position and value are set properly')
+		assert_equal(@x.Checkpos([5,5]), 'B', 'Success! Black position and value are set properly')
 	end
-	
 	
 	def test_pretty_print
 		assert(@x.ShowBoard != nil, 'Success! A board was printed')
