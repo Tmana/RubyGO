@@ -34,12 +34,22 @@
 class Board
 
 #Object for managing the Board and its functions
+	class << self
+		attr_accessor :groups
+		attr_accessor :data
+		attr_accessor :captures
+	end
 	
 	def initialize(size, handicap = 0)
 		@data = Array.new(size+2) { Array.new(size+2) {0} }
 		@size = size
 		@groups = Array.new()
+		@captures = [0,0]
 		MakeEdges()
+	end
+	
+	def groups
+		return @groups
 	end
 	
 	
@@ -151,13 +161,11 @@ class Board
 		
 		
 	def Removepos(coordinate_tuple)
+	#removes the given coordinate_tuple position from the board
 		x = coordinate_tuple[0]
 		y = coordinate_tuple[1]
 		@data[x][y] = 0
 	end
-	
-	
-	
 	
 	
 	
@@ -174,23 +182,26 @@ class Board
 						down = [wat[0], wat[1]-1]
 						left = [wat[0]-1, wat[1]]
 						right = [wat[0]+1, wat[1]]
-						if lol.liberties.include?(up) != true
+						if i == 0
 							lol.liberties.push(up)
 						end
-						if lol.liberties.include?(down) != true
+						if i == 1
+							lol.liberties.push(right)
+						end
+						if i == 2
 							lol.liberties.push(down)
 						end
-						if lol.liberties.include?(left) != true
+						if i == 3
 							lol.liberties.push(left)
-						end
-						if lol.liberties.include?(right) != true
-							lol.liberties.push(right)
 						end
 					end
 				end
 			end
 			
 			if lol.liberties.length == 0
+				if lol.color == 'B'
+					@captures[0] += lol.size
+				end
 				print "No Life without Liberty! Thus, Death!\n"
 				lol.pieces.each do |derp|
 					Removepos(derp)
@@ -231,6 +242,10 @@ class Group
 		return @color
 	end
 	
+	def size
+		return @size
+	end
+	
 	def pieces
 		 return @pieces
 	end
@@ -239,13 +254,10 @@ class Group
 		@pieces.push(coordinate_tuple)
 	end
 	
-	
 	def include?(coordinate_tuple)
 		return @pieces.include?(coordinate_tuple)
 	end
-
 	
-		
 	def liberties
 		return @liberties
 	end
@@ -257,13 +269,36 @@ end
 
 
 class Player
-
+#class for keeping track of players and their scores
+	class << self
+		attr_accessor :color
+		attr_accessor :name
+		attr_accessor :score
+		attr_accessor :territory
+	end
+	
 	def initialize(name, color)
 		@name = name
 		@territory = 0
 		@color = color
-		@captures = 0
-		@score = @territory + @captures
+		@score = 0
+	end
+	
+	def color
+		return @color
+	end
+	
+	def name
+		return @name
+	end
+	
+	def AddScore(n)
+		@score += n
+	end
+	
+
+	def score
+		return @score
 	end
 	
 end
@@ -273,16 +308,71 @@ end
 
 
 class Game
-
-	def initialize(board, player1, player2)
+# Game class allows two players to play out a game of Go until both players pass, and declares a winner. This also creates and saves a record of the game.
+	class << self
+		attr_accessor :record
+		attr_accessor :players
+		attr_accessor :Board
+	end
+	
+	def initialize(board = Board.new(19), player1 = Player.new("Black", 'B') , player2 = Player.new("White", 'W'), komi = 7.5)
+		@Board = board
 		@record = Array.new()
 		@currentmove = 0
+		@players = [player1, player2]
+		@pass = 0
+		player1.AddScore(komi)
+	end
+	
+	def Move(player, coordinate_tuple = gets)
+	#function that takes player as an argument, and gets user input for a coordinate, and updates the game and board
+		@currentmove += 1 
+		if coordinate_tuple == 'pass'
+			@pass += 1
+			break
+		end
+		@Board.Setpos(coordinate_tuple, player.color)
+		@record.push(@Board.clone)
+	end
+	
+	def territory_count
+		#function for calculating the territory when the game ends
 		
 	end
 	
-	def Move(player)
-		@currentmove += 1 
+	
+	def Play
+	#The main loop of the program, play has each player alternate moving until the game ends
+		while @pass < 2
+			@pass = 0
+			@players.each do |i| 
+				Move(i)
+			end
+		end
+		territory_count
+		player1.AddScore(player1.territory - @Board.captures[1])
+		player2.AddScore(player2.territory - @Board.captures[0])
 		
+		puts 'Black: ', player1.score
+		puts 'White: ', player2.score
+		if player1.score > player2.score
+			puts 'The winner is: ', player1.name, '!'
+		else
+			puts 'The winner is: ', player2.name, '!'
+		end
 	end
+
+	def players
+		return @players
+	end
+	
+	def record
+		return @record
+	end
+	
+	def Board
+		return @Board
+	end
+	
 end
 
