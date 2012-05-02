@@ -1,6 +1,9 @@
 #Go.testing.rb
 require "test/unit"
 require "Go"
+require "GoGUI"
+
+
 
 
 class GoTest < Test::Unit::TestCase
