@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html>
+<head>
+  <title>new (Game)</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  <link rel="stylesheet" href="../.././rdoc-style.css" type="text/css" media="screen" />
+</head>
+<body class="standalone-code">
+  <pre><span class="ruby-comment cmt"># File Go.rb, line 318</span>
+        <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">board</span> = <span class="ruby-constant">Board</span>.<span class="ruby-identifier">new</span>(<span class="ruby-value">19</span>), <span class="ruby-identifier">player1</span> = <span class="ruby-constant">Player</span>.<span class="ruby-identifier">new</span>(<span class="ruby-value str">&quot;Black&quot;</span>, <span class="ruby-value str">'B'</span>) , <span class="ruby-identifier">player2</span> = <span class="ruby-constant">Player</span>.<span class="ruby-identifier">new</span>(<span class="ruby-value str">&quot;White&quot;</span>, <span class="ruby-value str">'W'</span>), <span class="ruby-identifier">komi</span> = <span class="ruby-value">7.5</span>)
+                <span class="ruby-ivar">@Board</span> = <span class="ruby-identifier">board</span>
+                <span class="ruby-ivar">@record</span> = <span class="ruby-constant">Array</span>.<span class="ruby-identifier">new</span>()
+                <span class="ruby-ivar">@currentmove</span> = <span class="ruby-value">0</span>
+                <span class="ruby-ivar">@players</span> = [<span class="ruby-identifier">player1</span>, <span class="ruby-identifier">player2</span>]
+                <span class="ruby-ivar">@pass</span> = <span class="ruby-value">0</span>
+                <span class="ruby-identifier">player1</span>.<span class="ruby-constant">AddScore</span>(<span class="ruby-identifier">komi</span>)
+        <span class="ruby-keyword kw">end</span></pre>
+</body>
+</html>
