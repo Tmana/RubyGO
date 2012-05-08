@@ -23,9 +23,9 @@
 ###############################################################################           
 
 
-
-
-
+require "rubygems"
+require "rubygame"
+include Rubygame
 
 
 
@@ -119,15 +119,6 @@ class Board
 				mofo.AddPiece([x,y])
 				@groups.push(mofo)
 				UpdateLiberties()
-#				@groups.each do |herp|
-#				#check if takes away liberty of opponent group
-#					if herp.liberties.include?([x,y]) == true
-#						if herp.color != color
-#							herp.liberties.delete([x,y])
-#							print "removed liberty\n"
-#						end
-#					end
-#				 end
 			elsif CheckNeighbors([x,y]).count(color) == 1
 				@groups.each do |herp|
 					if herp.liberties.include?([x,y]) ==  true
@@ -142,10 +133,12 @@ class Board
 				newgroup = Group.new(color)
 				@groups.each do |herp|
 					if herp.liberties.include?([x,y])
-						herp.pieces.each do |derp|
-							newgroup.AddPiece(derp)
+						if herp.color == color
+							herp.pieces.each do |derp|
+								newgroup.AddPiece(derp)
+							end
+							@groups.delete(herp)
 						end
-						@groups.delete(herp)
 					end
 				end
 				newgroup.AddPiece([x,y])
@@ -205,11 +198,15 @@ class Board
 			if lol.liberties.length == 0
 				if lol.color == 'B'
 					@captures[0] += lol.size
+				else
+					@captures[1] += lol.size
 				end
 				print "No Life without Liberty! Thus, Death!\n"
+				
 				lol.pieces.each do |derp|
 					Removepos(derp)
 				end
+				
 				@groups.delete(lol)
 			end
 		end
@@ -217,9 +214,6 @@ class Board
 	
 	
 end
-
-
-
 
 
 
@@ -274,45 +268,111 @@ end
 
 class Player
 #class for keeping track of players and their scores
-	class << self
-		attr_accessor :color
-		attr_accessor :name
-		attr_accessor :score
-		attr_accessor :territory
-	end
-	
-	def initialize(name, color)
-		@name = name
-		@territory = 0
-		@color = color
-		@score = 0
-	end
-	
-	def color
-		return @color
-	end
-	
-	def name
-		return @name
-	end
-	
-	def AddScore(n)
-		@score += n
-	end
-	
+  class << self
+    attr_accessor :color
+    attr_accessor :name
+    attr_accessor :score
+    attr_accessor :territory
+  end
 
-	def score
-		return @score
-	end
-	
+  def initialize(name, color)
+    @name = name
+    @territory = 0
+    @color = color
+    @score = 0
+  end
+
+  def color
+    return @color
+  end
+
+  def name
+    return @name
+  end
+
+  def AddScore(n)
+    @score += n
+  end
+
+
+  def score
+    return @score
+  end
+
 end
 
 
 
 
 
+#Classes and code below this point utilize Rubygame
+
+
+
+
+class Piece
+# Class for displaying the pieces on the board
+  include Sprites::Sprite
+ 
+  def initialize(coordinate_tuple, color)
+    super()
+	@position = [20,20]
+	@color = color
+    @image = Surface.new(size = [40,40]).draw_circle_s @position, 20, @color
+    @rect  = @image.make_rect
+	@rect.center = coordinate_tuple
+  end
+  
+  
+  def update  seconds_passed
+  end
+ 
+ 
+  def draw  on_surface
+    @image.blit  on_surface, @rect
+  end
+  
+end
+
+
+class MousePiece
+# Class for displaying a ghost piece to follow the mouse when choosing a move
+  include Sprites::Sprite
+ 
+  def initialize(color)
+    super()
+	@position = [20,20]
+	@color = color
+    @image = Surface.new(size = [40,40]).fill('gray').set_alpha(170).draw_circle_s @position, 20, @color
+    @rect  = @image.make_rect
+ 
+  end
+  
+  
+  def update  seconds_passed, mousepos, color
+    @position = mousepos
+    @color = color
+    @rect.center = @position
+    @image = Surface.new(size = [40,40]).fill('gray').set_alpha(170).draw_circle_s [20,20], 20, @color
+  end
+ 
+ 
+  def draw  on_surface
+    @image.blit  on_surface, @rect
+  end
+  
+end
+
+
+
+
+
+
+
+
+
 class Game
-# Game class allows two players to play out a game of Go until both players pass, and declares a winner. This also creates and saves a record of the game.
+# Game class allows two players to play out a game of Go until both players pass, and declares a winner. This also creates and saves a record of the game. Includes GUI using Rubygame.
 	class << self
 		attr_accessor :record
 		attr_accessor :players
@@ -320,38 +380,160 @@ class Game
 	end
 	
 	def initialize(board = Board.new(19), player1 = Player.new("Black", 'B') , player2 = Player.new("White", 'W'), komi = 7.5)
+	
 		@Board = board
 		@record = Array.new()
 		@currentmove = 0
 		@players = [player1, player2]
 		@pass = 0
 		player1.AddScore(komi)
+	
+	
+	#GUI portion of Game
+		@screen = Screen.new(size = [800, 800], flags = RESIZABLE)
+		@screen.fill [255, 240, 0]
+		#@test_positions = Surface.new( size = @screen.size)
+		#(0..18).each do |i|
+		#	(0..18).each do |j|
+		#		@test_positions.draw_box([i*50,j*50], [(i*50)+50,(j*50)+50], 'pink')
+		#	end
+		#end
+		
+		@clock = Clock.new
+		@clock.target_framerate = 60
+		@clock.enable_tick_events
+		 
+		 
+		 self.Make_Rects
+		 
+		 @sprites = Sprites::Group.new
+		 Sprites::UpdateGroup.extend_object @sprites
+		 
+		 @event_queue = EventQueue.new
+		 @event_queue.enable_new_style_events
+		 
+		 @background = Surface.load "/home/tanner/Desktop/RubyGO/Blank_Go_board.png"
+		 @background = @background.zoom_to @screen.size[0], @screen.size[1], @smooth
+		 @background.blit @screen, [0,0]
+		 
+		 #@test_positions.blit @screen, [0,0]
+		 #@screen.fill('gray', rect = Rubygame::Rect.new([800,0],[900,800]))
+		 
+
+		 @screen.update
+	
+		
+		
 	end
 	
-	def Move(player, coordinate_tuple = gets)
-	#function that takes player as an argument, and gets user input for a coordinate, and updates the game and board
-		@currentmove += 1 
-		if coordinate_tuple == 'pass'
-			@pass += 1
-			break
+	
+	def Move(player, coordinate_tuple)
+	#function that takes player as an argument, and gets position input for a coordinate, and updates the game record and board
+		@currentmove += 1
+		coordinate_tuple2 = coordinate_tuple.clone
+		(0..18).each do |i|
+			(0..18).each do |j|
+				if @positions[i][j].collide_point?(coordinate_tuple[0],coordinate_tuple[1]) == true
+					coordinate_tuple = [i+1,j+1]
+				end
+			end
 		end
+
 		@Board.Setpos(coordinate_tuple, player.color)
+		puts player.color
 		@record.push(@Board.clone)
+		@screen.update
 	end
+	
+	
 	
 	def territory_count
 		#function for calculating the territory when the game ends
 		
 	end
 	
+	def Make_Rects
+		@positions = Array.new(size = @Board.size) { Array.new(size = @Board.size)}
+		(0..18).each do |i|
+			(0..18).each do |j|
+				if j== 0
+					if i == 0
+						@positions[i][j] = Rubygame::Rect.new([0,0], [50,50])
+					else
+						@positions[i][j] = Rubygame::Rect.new([i*41.75, 0], [50,50])
+					end
+				elsif i == 0
+					@positions[i][j] = Rubygame::Rect.new([0, j*41.75], [50,50])
+				else
+					@positions[i][j] = Rubygame::Rect.new([(i*41.75),(j*41.75)], [50,50])
+				end
+			end
+		 end
+	 end
+	
+	def Draw_Board
+		@sprites.undraw @screen, @background
+		@sprites.clear
+		(1..19).each do |i|
+			(1..19).each do |j|
+				if @Board.Checkpos([i,j]) == 'B'
+					@sprites.<<(Piece.new(@positions[i-1][j-1].center, 'Black'))
+				elsif @Board.Checkpos([i,j]) == 'W'
+					@sprites.<<(Piece.new(@positions[i-1][j-1].center, 'White'))
+				end
+			end
+		end
+		@sprites.draw @screen
+		@screen.update	
+		
+	end
+	
 	
 	def Play
 	#The main loop of the program, play has each player alternate moving until the game ends
-		while @pass < 2
-			@pass = 0
-			@players.each do |i| 
-				Move(i)
-			end
+		should_run = true
+		@currentplayer = @players[0]
+		mousepiece = MousePiece.new(@currentplayer.name)
+		while should_run do
+			seconds_passed = @clock.tick().seconds
+				@event_queue.each do |event|
+					case event
+					
+					when Rubygame::Events::MouseReleased
+						Move(@currentplayer, [event.pos[0], event.pos[1]])
+						
+						if @currentplayer == @players[0]
+							@currentplayer = @players[1]
+						else
+							@currentplayer = @players[0]
+						end
+						
+						@pass = 0
+						self.Draw_Board
+						
+					when Rubygame::Events::MouseMoved
+						mousepiece.undraw @screen, @background
+						mousepiece.update seconds_passed, [event.pos[0],event.pos[1]], @currentplayer.name
+						mousepiece.draw @screen
+						@screen.update
+						
+					when Rubygame::Events::KeyPressed
+						if event.key == :p
+							@pass += 1
+						end
+						if @pass >= 2
+							should_run = false
+						end
+						
+					when Events::QuitRequested, Events::KeyReleased
+						should_run = false
+					end
+				end
+				@sprites.undraw @screen, @background
+ 
+				@sprites.update  seconds_passed
+ 
+				@sprites.draw @screen
 		end
 		territory_count
 		player1.AddScore(player1.territory - @Board.captures[1])
@@ -379,4 +561,13 @@ class Game
 	end
 	
 end
+ 
 
+
+
+
+
+
+Rubygame.init
+Game.new.Play
+Rubygame.quit

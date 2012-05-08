@@ -18,6 +18,14 @@ class GoGUI
 	 @clock.target_framerate = 60
 	 @clock.enable_tick_events
 	 
+	 @boxes = Surface.new( size = @screen.size)
+	 @positions = Array.new
+	 (0..18).each do |i|
+		(0..18).each do |j|
+			@positions[i+1,j+1] = @boxes.draw_box([i*50,j*50], [(i*50)+50,(j*50)+50], 'black')
+		end
+	 end
+	 @boxes.blit @screen, [0,0]
 	 
 	 @sprites = Sprites::Group.new
 	 Sprites::UpdateGroup.extend_object @sprites
@@ -30,7 +38,9 @@ class GoGUI
 	 @background = @background.zoom_to @screen.size[0], @screen.size[1], @smooth
      @background.draw_circle_s [ 150, 150], 20, 'black'
      @background.draw_circle_s [ 191, 150], 20, 'white'
-     @background.blit @screen, [ 0, 0]
+     @background.draw_circle_s [ 107, 107], 20, 'white'
+     @background.draw_circle_s [ 150, 191], 20, 'white'
+     @background.blit @screen, [0,0]
      @screen.update
      
      
@@ -38,16 +48,20 @@ class GoGUI
      
    end
 
-
-
    def event_loop
 		should_run = true
 		while should_run do
-		 
+			
 			seconds_passed = @clock.tick().seconds
-		 
+			
 			@event_queue.each do |event|
 				case event
+				when Rubygame::Events::MousePressed
+					puts "Pressed #{event.button} at #{event.pos}"
+				when Rubygame::Events::MouseReleased
+					puts "Released #{event.button} at #{event.pos}"
+				when Rubygame::Events::MouseMoved
+					puts "the mouse is moving! AAAAAAAHHHHH!"
 				when Events::QuitRequested, Events::KeyReleased
 					should_run = false
 				end
@@ -58,9 +72,9 @@ class GoGUI
 			@sprites.update  seconds_passed
  
 			@sprites.draw @screen
-end
 		end
 	end
+end
 
  
  
@@ -72,14 +86,14 @@ class Piece
     super()
 	@position = coordinate_tuple
 	@color = color
-    @image = Surface.draw_circle_s @position, 
+    @image = Surface.draw_circle_s @position, 20, @color
     @rect  = @image.make_rect
  
   end
   
   
   def update  seconds_passed
-    #@rect.topleft = GetMouseEvent
+    @position = 
   end
  
  
