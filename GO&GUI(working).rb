@@ -39,7 +39,6 @@ class Board
 		attr_accessor :data
 		attr_accessor :captures
 		attr_accessor :size
-		attr_accessor :pieces
 	end
 	
 	def initialize(size, handicap = 0)
@@ -47,7 +46,6 @@ class Board
 		@size = size
 		@groups = Array.new()
 		@captures = [0,0]
-		@pieces = Array.new()
 		MakeEdges()
 	end
 	
@@ -57,10 +55,6 @@ class Board
 	
 	def size
 		return @size
-	end
-	
-	def pieces
-		return @pieces
 	end
 	
 	def MakeEdges()
@@ -119,12 +113,46 @@ class Board
 		#check if valid position
 		if @data[x][y] == 0
 			@data[x][y] = color
-			@pieces.push([[x,y], color])		
+			if CheckNeighbors([x,y]).count(color) == 0
+			#if position is a new group
+				mofo = Group.new(color)
+				mofo.AddPiece([x,y])
+				@groups.push(mofo)
+			elsif CheckNeighbors([x,y]).count(color) == 1
+				@groups.each do |herp|
+					if herp.liberties.include?([x,y]) ==  true
+						if herp.color == color
+							herp.AddPiece([x,y])
+						end
+					end
+				end
+				
+			elsif CheckNeighbors([x,y]).count(color) >= 2
+				newgroup = Group.new(color)
+				@groups.each do |herp|
+					if herp.liberties.include?([x,y]) and herp.color == color
+						
+						herp.AddPiece([x,y])
+						
+						herp.pieces.each do |transfer|
+								newgroup.AddPiece(transfer)
+						end
+						
+						@groups.delete(herp)
+					end
+				end
+				newgroup.AddPiece([x,y])
+				puts newgroup.pieces
+				@groups.push(newgroup)		
+						
+			end
+			
+			
 		else
-			print "Invalid move, please try again..."
+			return "Invalid move, please try again..."
 		end
-		UpdateGroups()
-		
+		UpdateLiberties()
+		return 0
 	end	
 		
 		
@@ -137,51 +165,14 @@ class Board
 		@data[x][y] = 0
 	end
 	
-	def UpdateGroups()
-		@groups.clear
-		@pieces.each do |wat|
-			coord = wat[0]
-			color = wat[1]
-			if CheckNeighbors(coord).count(color) == 0
-				#if position is a new group
-					mofo = Group.new(color)
-					mofo.AddPiece(coord)
-					@groups.push(mofo)
-			elsif CheckNeighbors(coord).count(color) == 1
-				@groups.each do |herp|
-					if herp.liberties.include?(coord) ==  true
-						if herp.color == color
-							herp.AddPiece(coord)
-						end
-					end
-				end
-					
-			elsif CheckNeighbors(coord).count(color) >= 2
-				newgroup = Group.new(color)
-				@groups.each do |herp|
-					if herp.color == color
-						if herp.liberties.include?(coord)
-							herp.pieces.each do |derp|
-								newgroup.AddPiece(derp)
-							end
-							@groups.delete(herp)
-						end
-					end
-				end
-				newgroup.AddPiece(coord)
-				@groups.push(newgroup)
-			end
-		end
-		UpdateLiberties()
-	end
-			
+	
 	
 	def UpdateLiberties()
 		#re-calculates the liberties of the each group on the board
 		@groups.each do |lol|
 			#resets all liberties for all groups.
 			lol.liberties.clear
-			lol.group_pieces.each do |wat| 
+			lol.pieces.each do |wat| 
 				for i in 0..3
 					if CheckNeighbors(wat)[i] == 0
 				#if this adjacent space is not already a liberty, make it one
@@ -213,9 +204,8 @@ class Board
 				end
 				print "No Life without Liberty! Thus, Death!\n"
 				
-				lol.group_pieces.each do |derp|
+				lol.pieces.each do |derp|
 					Removepos(derp)
-					@pieces.delete(derp)
 				end
 				
 				@groups.delete(lol)
@@ -228,20 +218,23 @@ end
 
 
 
+
+
+
 class Group
 #class for keeping track of orthogonally connected groups of stones on the board, and their liberties
 	class << self
 		attr_accessor :color
-		attr_accessor :group_pieces
+		attr_accessor :pieces
 		attr_accessor :liberties
 		attr_accessor :size
 	end
 
 	def initialize(color)
 		@color = color
-		@group_pieces = Array.new()
+		@pieces = Array.new()
 		@liberties = Array.new()
-		@size = @group_pieces.length
+		@size = @pieces.length
 	end
 	
 	def color
@@ -252,12 +245,12 @@ class Group
 		return @size
 	end
 	
-	def group_pieces
-		 return @group_pieces
+	def pieces
+		 return @pieces
 	end
 	
 	def AddPiece(coordinate_tuple)
-		@group_pieces.push(coordinate_tuple)
+		@pieces.push(coordinate_tuple)
 	end
 	
 	def include?(coordinate_tuple)
@@ -437,7 +430,6 @@ class Game
 	
 	def Move(player, coordinate_tuple)
 	#function that takes player as an argument, and gets position input for a coordinate, and updates the game record and board
-		@currentmove += 1
 		coordinate_tuple2 = coordinate_tuple.clone
 		(0..18).each do |i|
 			(0..18).each do |j|
@@ -447,16 +439,23 @@ class Game
 			end
 		end
 
-		@Board.Setpos(coordinate_tuple, player.color)
-		puts player.color
-		@record.push(@Board.clone)
-		@screen.update
+		invalid = @Board.Setpos(coordinate_tuple, player.color)
+		if invalid == 0
+			@currentmove += 1
+			@Board.Setpos(coordinate_tuple, player.color)
+			@record.push(@Board.clone)
+			@screen.update
+			return 0
+		else
+			return invalid
+		end
 	end
 	
 	
 	
 	def territory_count
 		#function for calculating the territory when the game ends
+		
 	end
 	
 	def Make_Rects
@@ -507,15 +506,18 @@ class Game
 					case event
 					
 					when Rubygame::Events::MouseReleased
-						Move(@currentplayer, [event.pos[0], event.pos[1]])
-						
-						if @currentplayer == @players[0]
-							@currentplayer = @players[1]
-						else
-							@currentplayer = @players[0]
+						invalid = Move(@currentplayer, [event.pos[0], event.pos[1]])
+						if invalid == 0
+							if @currentplayer == @players[0]
+								@currentplayer = @players[1]
+							else
+								@currentplayer = @players[0]
+							end
+							
+							@pass = 0
+						else 
+							puts invalid
 						end
-						
-						@pass = 0
 						self.Draw_Board
 						
 					when Rubygame::Events::MouseMoved
