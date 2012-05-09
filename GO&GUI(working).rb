@@ -319,7 +319,7 @@ class Piece
     super()
 	@position = [20,20]
 	@color = color
-    @image = Surface.new(size = [40,40]).draw_circle_s @position, 20, @color
+    @image = Surface.new(size = [40,40]).fill([220,179,92,255]).draw_circle_s @position, 20, @color
     @rect  = @image.make_rect
 	@rect.center = coordinate_tuple
   end
@@ -344,7 +344,7 @@ class MousePiece
     super()
 	@position = [20,20]
 	@color = color
-    @image = Surface.new(size = [40,40]).fill('gray').set_alpha(170).draw_circle_s @position, 20, @color
+    @image = Surface.new(size = [40,40]).fill([220,179,92,255]).set_alpha(170).draw_circle_s @position, 20, @color
     @rect  = @image.make_rect
  
   end
@@ -354,7 +354,8 @@ class MousePiece
     @position = mousepos
     @color = color
     @rect.center = @position
-    @image = Surface.new(size = [40,40]).fill('gray').set_alpha(170).draw_circle_s [20,20], 20, @color
+    @image = Surface.new(size = [40,40]).fill([220,179,92,255]).draw_circle_s [20,20], 20, @color
+    @image.set_alpha(170)
   end
  
  
