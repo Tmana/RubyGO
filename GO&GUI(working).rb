@@ -142,9 +142,7 @@ class Board
 					end
 				end
 				newgroup.AddPiece([x,y])
-				puts newgroup.pieces
-				@groups.push(newgroup)		
-						
+				@groups.push(newgroup)
 			end
 			
 			
@@ -336,6 +334,8 @@ class Piece
 end
 
 
+
+
 class MousePiece
 # Class for displaying a ghost piece to follow the mouse when choosing a move
   include Sprites::Sprite
@@ -392,14 +392,9 @@ class Game
 	
 	
 	#GUI portion of Game
-		@screen = Screen.new(size = [800, 800], flags = RESIZABLE)
-		@screen.fill [255, 240, 0]
-		#@test_positions = Surface.new( size = @screen.size)
-		#(0..18).each do |i|
-		#	(0..18).each do |j|
-		#		@test_positions.draw_box([i*50,j*50], [(i*50)+50,(j*50)+50], 'pink')
-		#	end
-		#end
+		@screen = Screen.new(size = [900, 800], flags = RESIZABLE)
+		@screen.fill 'gray'
+		
 		
 		@clock = Clock.new
 		@clock.target_framerate = 60
@@ -415,11 +410,10 @@ class Game
 		 @event_queue.enable_new_style_events
 		 
 		 @background = Surface.load "/home/tanner/Desktop/RubyGO/Blank_Go_board.png"
-		 @background = @background.zoom_to @screen.size[0], @screen.size[1], @smooth
+		 @background = @background.zoom_to @screen.size[0]-100, @screen.size[1], @smooth
+		 @sidebar = Surface.new( [100,800])
+		 @sidebar.blit @screen, [@background.size[0], 0]
 		 @background.blit @screen, [0,0]
-		 
-		 #@test_positions.blit @screen, [0,0]
-		 #@screen.fill('gray', rect = Rubygame::Rect.new([800,0],[900,800]))
 		 
 
 		 @screen.update
@@ -445,7 +439,7 @@ class Game
 			@currentmove += 1
 			@Board.Setpos(coordinate_tuple, player.color)
 			@record.push(@Board.clone)
-			@screen.update
+			self.Draw_Board
 			return 0
 		else
 			return invalid
@@ -478,7 +472,10 @@ class Game
 		 end
 	 end
 	
+	
+	
 	def Draw_Board
+	#Draws the state of the board to the screen
 		@sprites.undraw @screen, @background
 		@sprites.clear
 		(1..19).each do |i|
@@ -494,6 +491,7 @@ class Game
 		@screen.update	
 		
 	end
+	
 	
 	
 	def Play
@@ -524,8 +522,10 @@ class Game
 					when Rubygame::Events::MouseMoved
 						mousepiece.undraw @screen, @background
 						mousepiece.update seconds_passed, [event.pos[0],event.pos[1]], @currentplayer.name
-						mousepiece.draw @screen
-						@screen.update
+						if event.pos[0] < 780
+							mousepiece.draw @screen
+							@screen.update
+						end
 						
 					when Rubygame::Events::KeyPressed
 						if event.key == :p
